@@ -33,8 +33,8 @@ func check(A [][]float64) (e eigen, err error) {
 		fmt.Printf("Delta = %.10e\n", delta)
 	}
 
-	if delta > 𝛆 {
-		err = fmt.Errorf("Precition is not ok")
+	if delta > 𝛆*10.0 {
+		err = fmt.Errorf("Precition is not ok. %.5e > %.5e", delta, 𝛆)
 		return
 	}
 
@@ -110,14 +110,14 @@ func Test(t *testing.T) {
 
 	t.Run("matrix size: zero", func(t *testing.T) {
 		e, err := check([][]float64{})
-		if err != nil {
+		if err == nil {
 			t.Fatal(err)
 		}
 		_ = e
 	})
 	t.Run("matrix size: nil", func(t *testing.T) {
 		e, err := check(nil)
-		if err != nil {
+		if err == nil {
 			t.Fatal(err)
 		}
 		_ = e
@@ -242,5 +242,5 @@ func ExampleInitByEigenvector1and2() {
 	// ratio: 0.9999400 x: [1.00 0.2500050]. Result: 𝜦=-2.0000 𝑿=[1.0000 0.3333]
 	// ratio: 0.9999600 x: [1.00 0.2500033]. Result: 𝜦=-2.0000 𝑿=[1.0000 0.3333]
 	// ratio: 0.9999800 x: [1.00 0.2500017]. Result: 𝜦=-2.0000 𝑿=[1.0000 0.3333]
-	// ratio: 1.0000000 x: [1.00 0.2500000]. Result: 𝜦=-1.0000 𝑿=[1.0000 0.2500]
+	// ratio: 1.0000000 x: [1.00 0.2500000]. Result: 𝜦=-2.0000 𝑿=[1.0000 0.3333]
 }

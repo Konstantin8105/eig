@@ -838,6 +838,46 @@ func random(x []float64) {
 }
 ```
 
+Что если инициализировать точным значением свободного вектора 1 формы
+```golang
+	t.Run("initialize by eigenvector1", func(t *testing.T) {
+		old := initialize
+		initialize = func(x []float64) {
+			x[0] = 1.0
+			x[1] = 0.3333333333333333
+		}
+		defer func() {
+			initialize = old
+		}()
+		e, err := check([][]float64{
+			{2, -12},
+			{1, -5},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = e
+	})
+```
+Результат предсказуемо положительный:
+```
+=== RUN   Test/initialize_by_eigenvector1
+iter:  0	x = [1 0.33333333333333326]
+e =  {-2 [1 0.3333333333333333]}
+Delta = 1.1102230246e-16
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

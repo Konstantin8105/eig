@@ -163,4 +163,23 @@ func Test(t *testing.T) {
 		t.Log(err)
 		_ = e
 	})
+	t.Run("initialize by eigenvector1", func(t *testing.T) {
+		old := initialize
+		initialize = func(x []float64) {
+			x[0] = 1.0
+			x[1] = 0.3333333333333333
+		}
+		defer func() {
+			initialize = old
+		}()
+		e, err := check([][]float64{
+			{2, -12},
+			{1, -5},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = e
+	})
+
 }

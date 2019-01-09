@@ -751,6 +751,94 @@ Delta = 6.7500719937e-06
 	}
 ```
 
+## step05: исследование начального вектора `х`
+
+У нас изначально реализован рандомизированная задача начального вектора `x`.
+```golang
+	// инициализация произвольным вектором
+	rand.Seed(time.Now().UnixNano())
+	for i := range x {
+		x[i] = rand.Float64() // [0.0, 1)
+	}
+```
+
+Модифицируем код для задания требуемых значений начального вектора.
+```golang
+func random(x []float64) {
+	// инициализация произвольным вектором
+	rand.Seed(time.Now().UnixNano())
+	for i := range x {
+		x[i] = rand.Float64() // [0.0, 1)
+	}
+}
+
+var initialize func([]float64) = random
+```
+и
+```golang
+	...
+	// инициализация произвольным вектором
+	initialize(x)
+
+	...
+```
+
+Добавим тест с инициализатором нулями:
+```golang
+	t.Run("initialize by zeros", func(t *testing.T) {
+		old := initialize
+		initialize = func(x []float64) {
+			for i := range x {
+				x[i] = 0.0
+			}
+		}
+		defer func() {
+			initialize = old
+		}()
+		e, err := check([][]float64{
+			{2, -12},
+			{1, -5},
+		})
+		if err == nil {
+			t.Fatal(err)
+		}
+		t.Log(err)
+		_ = e
+	})
+```
+Его результат предсказуем некорректен:
+```
+=== RUN   Test/initialize_by_zeros
+iter:  0	x = [NaN NaN]
+e =  {NaN [NaN NaN]}
+Delta = NaN
+```
+Это легко отработать в ошибку:
+```golang
+			if max == 0.0 {
+				err = fmt.Errorf("all values of eigenvector is zeros")
+				return
+			}
+```
+также стоит внести это в рандимизиронную функцию:
+```golang
+func random(x []float64) {
+	// инициализация произвольным вектором
+	rand.Seed(time.Now().UnixNano())
+	for i := range x {
+		x[i] = rand.Float64() // [0.0, 1)
+	}
+	// проверка чтобы все элементы не нулевые
+	for i := range x {
+		if x[i] != 0.0 {
+			return
+		}
+	}
+	random(x)
+}
+```
+
+
 
 
 

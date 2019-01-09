@@ -19,6 +19,23 @@ type eigen struct {
 // точность результата
 var 𝛆 float64 = 1e-6
 
+func random(x []float64) {
+	// инициализация произвольным вектором
+	rand.Seed(time.Now().UnixNano())
+	for i := range x {
+		x[i] = rand.Float64() // [0.0, 1)
+	}
+	// проверка чтобы все элементы не нулевые
+	for i := range x {
+		if x[i] != 0.0 {
+			return
+		}
+	}
+	random(x)
+}
+
+var initialize func([]float64) = random
+
 func pm(A [][]float64) (e eigen, err error) {
 	n := len(A)
 	if n == 0 {
@@ -45,10 +62,7 @@ func pm(A [][]float64) (e eigen, err error) {
 	xLast := make([]float64, n)
 
 	// инициализация произвольным вектором
-	rand.Seed(time.Now().UnixNano())
-	for i := range x {
-		x[i] = rand.Float64() // [0.0, 1)
-	}
+	initialize(x)
 
 	for iter := 0; ; iter++ {
 		// z(k) = A · x(k-1)
@@ -66,6 +80,10 @@ func pm(A [][]float64) (e eigen, err error) {
 				if math.Abs(z[i]) > math.Abs(max) {
 					max = z[i]
 				}
+			}
+			if max == 0.0 {
+				err = fmt.Errorf("all values of eigenvector is zeros")
+				return
 			}
 			for i := range x {
 				x[i] = z[i] / max

@@ -16,6 +16,9 @@ type eigen struct {
 	𝑿 []float64
 }
 
+// точность результата
+var 𝛆 float64 = 1e-6
+
 func pm(A [][]float64) (e eigen, err error) {
 	n := len(A)
 	x := make([]float64, n)
@@ -27,9 +30,6 @@ func pm(A [][]float64) (e eigen, err error) {
 	for i := range x {
 		x[i] = rand.Float64() // [0.0, 1)
 	}
-
-	// точность результата
-	𝛆 := 1e-6
 
 	for iter := 0; ; iter++ {
 		// z(k) = A · x(k-1)
@@ -90,6 +90,22 @@ func pm(A [][]float64) (e eigen, err error) {
 		}
 		if isSame {
 			err = fmt.Errorf("Loop values x")
+			return
+		}
+
+		// значение х не изменяется кроме 1.0
+		isSame = false
+		for i := range x {
+			if x[i] == 1.0 && xLast[i] == 1.0 {
+				continue
+			}
+			if x[i] == xLast[i] {
+				isSame = true
+				break
+			}
+		}
+		if isSame {
+			err = fmt.Errorf("one or more values of eigenvector is not change")
 			return
 		}
 

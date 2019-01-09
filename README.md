@@ -337,6 +337,11 @@ func check(A [][]float64) (e eigen, err error) {
 
 	fmt.Printf("Delta = %.10e\n", delta)
 
+	if delta > 𝛆 {
+		err = fmt.Errorf("Precition is not ok")
+		return
+	}
+
 	return
 }
 ```
@@ -344,8 +349,10 @@ func check(A [][]float64) (e eigen, err error) {
 Увеличим точность:
 
 ```golang
-	// точность результата
-	𝛆 := 1e-6
+
+// точность результата
+var 𝛆 float64 = 1e-6
+
 ```
 
 посмотрим результат тестов:
@@ -408,6 +415,25 @@ Delta = 7.3807622813e-07
 		}
 		if isSame {
 			err = fmt.Errorf("Loop values x")
+			return
+		}
+```
+
+Добавим обработку ошибок для теста Е4:
+```golang
+		// значение х не изменяется кроме 1.0
+		isSame = false
+		for i := range x {
+			if x[i] == 1.0 && xLast[i] == 1.0 {
+				continue
+			}
+			if x[i] == xLast[i] {
+				isSame = true
+				break
+			}
+		}
+		if isSame {
+			err = fmt.Errorf("one or more values of eigenvector is not change")
 			return
 		}
 ```

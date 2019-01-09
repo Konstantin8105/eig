@@ -31,6 +31,11 @@ func check(A [][]float64) (e eigen, err error) {
 
 	fmt.Printf("Delta = %.10e\n", delta)
 
+	if delta > 𝛆 {
+		err = fmt.Errorf("Precition is not ok")
+		return
+	}
+
 	return
 }
 
@@ -61,7 +66,7 @@ func Test(t *testing.T) {
 			{1, 0},
 			{0, -1},
 		})
-		if err != nil {
+		if err == nil {
 			t.Fatal(err)
 		}
 		_ = e
@@ -72,7 +77,7 @@ func Test(t *testing.T) {
 			{0, 2, 0},
 			{0, 0, 1},
 		})
-		if err != nil {
+		if err == nil {
 			t.Fatal(err)
 		}
 		_ = e

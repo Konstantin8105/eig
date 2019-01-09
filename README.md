@@ -960,7 +960,7 @@ func ExampleInitByEigenvector1and2() {
 				// добавим возмущения
 				if iter < 3 {
 					// добавляем возмужение
-					perturbation := 0.02 //* rand.Float64()
+					perturbation := 0.02 * (1 + rand.Float64())
 					for i := range x {
 						// x[i] = [-1.0,...,1.0]
 						factor := math.Abs(x[i])

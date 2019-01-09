@@ -67,6 +67,9 @@ func pm(A [][]float64) (e eigen, err error) {
 	// инициализация произвольным вектором
 	initialize(x)
 
+	// add random seed
+	rand.Seed(time.Now().UnixNano())
+
 	for iter := 0; ; iter++ {
 		// z(k) = A · x(k-1)
 		z := make([]float64, n)
@@ -108,7 +111,7 @@ func pm(A [][]float64) (e eigen, err error) {
 				// добавим возмущения
 				if iter < 3 {
 					// добавляем возмужение
-					perturbation := 0.02 //* rand.Float64()
+					perturbation := 0.02 * (1 + rand.Float64())
 					for i := range x {
 						// x[i] = [-1.0,...,1.0]
 						factor := math.Abs(x[i])

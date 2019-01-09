@@ -11,6 +11,39 @@ func Test(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		t.Log(e)
+		_ = e
 	})
+	t.Run("2", func(t *testing.T) {
+		e, err := pm([][]float64{
+			{4, 5},
+			{6, 5},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = e
+	})
+
+	t.Run("E3", func(t *testing.T) {
+		e, err := pm([][]float64{
+			{1, 0},
+			{0, -1},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = e
+	})
+	t.Run("E4", func(t *testing.T) {
+		e, err := pm([][]float64{
+			{2, 0, 0},
+			{0, 2, 0},
+			{0, 0, 1},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = e
+	})
+
 }

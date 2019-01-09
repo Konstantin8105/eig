@@ -69,7 +69,7 @@ func pm(A [][]float64) (e eigen, err error) {
 		}
 
 		// устанавливаем лимит на количество итераций
-		if iter > 10000 {
+		if iter > 100 {
 			err = fmt.Errorf("Iteration limit")
 			return
 		}
@@ -98,6 +98,8 @@ func pm(A [][]float64) (e eigen, err error) {
 	}
 
 	e.𝜦 = Axx / xx
+
+	fmt.Println("e = ", e)
 
 	return
 }

@@ -196,8 +196,8 @@ func Test(t *testing.T) {
 			{2, -12},
 			{1, -5},
 		})
-		if math.Abs(e.𝜦-(-2)) > 1e-5 {
-			t.Fatal("result is not correct")
+		if math.Abs(e.𝜦+2) > 1e-4 {
+			t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e.𝜦, e.𝜦+2)
 		}
 		if err != nil {
 			t.Fatal(err)

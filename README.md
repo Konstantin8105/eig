@@ -959,7 +959,7 @@ func ExampleInitByEigenvector1and2() {
 			// добавим возмущения
 			if iter < 3 {
 				// добавляем возмужение
-				perturbation := 0.002
+				perturbation := 0.002 * rand.Float64()
 				for i := range x {
 					// x[i] = [-1.0,...,1.0]
 					factor := math.Abs(x[i])
@@ -979,6 +979,7 @@ func ExampleInitByEigenvector1and2() {
 					//  1.0    0.0
 					x[i] += perturbation * factor * factor
 				}
+				iter = 0 // сброс количества итераций
 				continue
 			}
 ```

@@ -107,7 +107,7 @@ func pm(A [][]float64) (e eigen, err error) {
 			// добавим возмущения
 			if iter < 3 {
 				// добавляем возмужение
-				perturbation := 0.002
+				perturbation := 0.002 * rand.Float64()
 				for i := range x {
 					// x[i] = [-1.0,...,1.0]
 					factor := math.Abs(x[i])
@@ -127,6 +127,7 @@ func pm(A [][]float64) (e eigen, err error) {
 					//  1.0    0.0
 					x[i] += perturbation * factor * factor
 				}
+				iter = 0 // сброс количества итераций
 				continue
 			}
 

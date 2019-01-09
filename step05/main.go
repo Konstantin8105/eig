@@ -36,6 +36,9 @@ func random(x []float64) {
 
 var initialize func([]float64) = random
 
+// выводить на экран
+var output bool = true
+
 func pm(A [][]float64) (e eigen, err error) {
 	n := len(A)
 	if n == 0 {
@@ -112,7 +115,9 @@ func pm(A [][]float64) (e eigen, err error) {
 		}
 
 		// отображаем результат каждой итерации
-		fmt.Printf("iter: %2d\tx = %v\n", iter, x)
+		if output {
+			fmt.Printf("iter: %2d\tx = %v\n", iter, x)
+		}
 
 		// обработка повторения значений х, но с изменением знака кроме 1.0
 		isSame := true
@@ -169,7 +174,9 @@ func pm(A [][]float64) (e eigen, err error) {
 
 	e.𝜦 = Axx / xx
 
-	fmt.Println("e = ", e)
+	if output {
+		fmt.Println("e = ", e)
+	}
 
 	return
 }

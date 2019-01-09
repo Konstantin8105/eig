@@ -29,7 +29,9 @@ func check(A [][]float64) (e eigen, err error) {
 	}
 	delta = math.Sqrt(delta)
 
-	fmt.Printf("Delta = %.10e\n", delta)
+	if output {
+		fmt.Printf("Delta = %.10e\n", delta)
+	}
 
 	if delta > 𝛆 {
 		err = fmt.Errorf("Precition is not ok")
@@ -181,5 +183,64 @@ func Test(t *testing.T) {
 		}
 		_ = e
 	})
+	t.Run("initialize by eigenvector2", func(t *testing.T) {
+		old := initialize
+		initialize = func(x []float64) {
+			x[0] = 1.00
+			x[1] = 0.25
+		}
+		defer func() {
+			initialize = old
+		}()
+		e, err := check([][]float64{
+			{2, -12},
+			{1, -5},
+		})
+		if math.Abs(e.𝜦-(-2)) > 1e-5 {
+			t.Fatal("result is not correct")
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = e
+	})
+}
 
+func ExampleInitByEigenvector1and2() {
+	old := initialize
+	defer func() {
+		initialize = old
+	}()
+	oldO := output
+	defer func() {
+		output = oldO
+	}()
+	// eigenvector 1 : [1 0.333333]
+	// eigenvector 2 : [1 0.25]
+	n := 50000
+	output = false
+	for i := int(n * 9999.0 / 10000.0); i < n; i++ {
+		value := float64(i) / float64(n-1)
+		initialize = func(x []float64) {
+			x[0] = 1.00
+			x[1] = 0.25*value + 0.33333333333333333*(1.0-value)
+		}
+		e, err := check([][]float64{
+			{2, -12},
+			{1, -5},
+		})
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("ratio: %8.7f x: [%3.2f %8.7f]. Result: 𝜦=%6.4f 𝑿=[%6.4f %6.4f]\n",
+			value, 1.0, 0.25*value+0.33333333333333333*(1.0-value),
+			e.𝜦, e.𝑿[0], e.𝑿[1])
+	}
+
+	// Output:
+	// ratio: 0.9999200 x: [1.00 0.2500067]. Result: 𝜦=-2.0000 𝑿=[1.0000 0.3333]
+	// ratio: 0.9999400 x: [1.00 0.2500050]. Result: 𝜦=-2.0000 𝑿=[1.0000 0.3333]
+	// ratio: 0.9999600 x: [1.00 0.2500033]. Result: 𝜦=-2.0000 𝑿=[1.0000 0.3333]
+	// ratio: 0.9999800 x: [1.00 0.2500017]. Result: 𝜦=-2.0000 𝑿=[1.0000 0.3333]
+	// ratio: 1.0000000 x: [1.00 0.2500000]. Result: 𝜦=-1.0000 𝑿=[1.0000 0.2500]
 }

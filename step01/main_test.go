@@ -69,6 +69,7 @@ func Test(t *testing.T) {
 		if err == nil {
 			t.Fatal(err)
 		}
+		t.Log(err)
 		_ = e
 	})
 	t.Run("E4", func(t *testing.T) {
@@ -80,6 +81,7 @@ func Test(t *testing.T) {
 		if err == nil {
 			t.Fatal(err)
 		}
+		t.Log(err)
 		_ = e
 	})
 }

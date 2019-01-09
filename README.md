@@ -471,7 +471,9 @@ iter:  1	x = [1 0.5858060710718106 0.08262690740409757]
     --- PASS: Test/1 (0.00s)
     --- PASS: Test/2 (0.00s)
     --- PASS: Test/E3 (0.00s)
+        main_test.go:72: Loop values x
     --- PASS: Test/E4 (0.00s)
+        main_test.go:84: one or more values of eigenvector is not change
 PASS
 ok  	github.com/Konstantin8105/eig/step01	0.003s
 ```

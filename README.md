@@ -1043,8 +1043,57 @@ func ExampleInitByEigenvector1and2() {
         main_test.go:216: all elements of matrix is zeros
 ```
 
+## step07: треугольные матрицы
 
+Добавим тесты с треугольными входными матрицами.
+Особенность треугольных матриц в том что диагональные элементы матрицы
+будут являться собственными значениями.
 
+```golang
+	t.Run("lower triangle matrix", func(t *testing.T) {
+		e, err := check([][]float64{
+			{2, 1},
+			{0, -4},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = e
+	})
+	t.Run("upper triangle matrix", func(t *testing.T) {
+		e, err := check([][]float64{
+			{2, 3, 1},
+			{0, -1, 2},
+			{0, 0, 3},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = e
+	})
+```
+
+Результат сходится до требуемой точности:
+
+```
+=== RUN   Test/lower_triangle_matrix
+iter:  0	x = [-0.5376658386946178 1]
+iter:  1	x = [0.018832919347308907 1]
+...
+iter: 19	x = [-0.16666595904190312 1]
+iter: 20	x = [-0.16666702047904844 1]
+=== RUN   Test/upper_triangle_matrix
+iter:  0	x = [1 0.3176319230555149 0.7494395060708893]
+iter:  1	x = [1 0.3190545969693437 0.6072703715544727]
+...
+iter: 27	x = [1 0.20000174862493353 0.40000349724985906]
+iter: 28	x = [1 0.20000116574655347 0.4000023314931096]
+e =  {3.0000032381743904 [1 0.20000077716286063 0.4000015543257204]}
+Delta = 1.5863821838e-06
+--- PASS: Test (0.00s)
+    --- PASS: Test/lower_triangle_matrix (0.00s)
+    --- PASS: Test/upper_triangle_matrix (0.00s)
+```
 
 
 

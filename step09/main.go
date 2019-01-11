@@ -39,7 +39,7 @@ var initialize func([]float64) = random
 // выводить на экран
 var output bool = true
 
-func pm(A [][]float64) (e eigen, err error) {
+func pm(A [][]float64) (e []eigen, err error) {
 	n := len(A)
 	if n == 0 {
 		err = fmt.Errorf("matrix size is zero")
@@ -73,8 +73,12 @@ func pm(A [][]float64) (e eigen, err error) {
 
 	// для случая матрица 1х1
 	if n == 1 {
-		e.𝑿 = []float64{1.0}
-		e.𝜦 = A[0][0]
+		e = []eigen{
+			{
+				𝑿: []float64{1.0},
+				𝜦: A[0][0],
+			},
+		}
 		return
 	}
 
@@ -120,7 +124,7 @@ func pm(A [][]float64) (e eigen, err error) {
 		if iter > 0 && iter%5 == 0 {
 			lambda := λ(A, x)
 			for i := range x {
-				x[i], xLast[i] = x[i]+lambda*xLast[i], x[i]-lambda*xLast[i]
+				x[i] = x[i] + lambda*xLast[i]
 			}
 			err = oneMax(x, x)
 			if err != nil {
@@ -166,8 +170,10 @@ func pm(A [][]float64) (e eigen, err error) {
 		copy(xLast, x)
 	}
 
-	e.𝑿 = x
-	e.𝜦 = λ(A, x)
+	e = append(e, eigen{
+		𝑿: x,
+		𝜦: λ(A, x),
+	})
 
 	if output {
 		fmt.Println("e = ", e)
@@ -216,10 +222,29 @@ func oneMax(x, z []float64) (err error) {
 
 // ||x(k-1)-x(k-2)|| > 𝛆
 func eMax(x, xLast []float64) (eMax float64) {
+	// for i := range x {
+	// 	e := math.Abs(x[i] - xLast[i])
+	// 	if e > eMax {
+	// 		eMax = e
+	// 	}
+	// }
+
+	// for i := range x {
+	// 	eMax += math.Pow(x[i]-xLast[i], 2.0)
+	// }
+	// eMax = math.Sqrt(eMax)
+
 	for i := range x {
-		e := math.Abs(x[i] - xLast[i])
-		if e > eMax {
-			eMax = e
+		if math.Abs(xLast[i]) < 𝛆 && math.Abs(x[i]) < 𝛆 {
+			continue
+		}
+		if xLast[i] != 0.0 {
+			eMax += math.Abs((x[i] - xLast[i]) / xLast[i])
+			continue
+		}
+		if x[i] != 0.0 {
+			eMax += math.Abs((x[i] - xLast[i]) / x[i])
+			continue
 		}
 	}
 	return

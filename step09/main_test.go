@@ -3,39 +3,46 @@ package main
 import (
 	"fmt"
 	"math"
+	"os"
 	"testing"
 )
 
-func check(A [][]float64) (e eigen, err error) {
-	e, err = pm(A)
+func check(A [][]float64) (es []eigen, err error) {
+	es, err = pm(A)
 	if err != nil {
 		return
 	}
-	// Ax=lx
-	// Ax-lx=0
-	n := len(A)
-	res := make([]float64, n)
 
-	for row := 0; row < n; row++ {
-		for col := 0; col < n; col++ {
-			res[row] += A[row][col] * e.𝑿[col]
+	for indexE, e := range es {
+		// Ax=lx
+		// Ax-lx=0
+		n := len(A)
+		res := make([]float64, n)
+
+		for row := 0; row < n; row++ {
+			for col := 0; col < n; col++ {
+				res[row] += A[row][col] * e.𝑿[col]
+			}
 		}
-		res[row] -= e.𝜦 * e.𝑿[row]
-	}
+		for row := 0; row < n; row++ {
+			res[row] -= e.𝜦 * e.𝑿[row]
+		}
 
-	var delta float64
-	for i := range res {
-		delta += math.Pow(res[i], 2.0)
-	}
-	delta = math.Sqrt(delta)
+		var delta float64
+		for i := range res {
+			if res[i] > delta {
+				delta = math.Abs(res[i])
+			}
+		}
 
-	if output {
-		fmt.Printf("Delta = %.10e\n", delta)
-	}
+		if output {
+			fmt.Printf("Delta = %.10e\n", delta)
+		}
 
-	if delta > 𝛆*10.0 {
-		err = fmt.Errorf("Precition is not ok. %.5e > %.5e", delta, 𝛆)
-		return
+		if delta > 𝛆*10 {
+			err = fmt.Errorf("Precition is not ok. index : %d . %.5e > %.5e", indexE, delta, 𝛆)
+			return
+		}
 	}
 
 	return
@@ -204,8 +211,8 @@ func Test(t *testing.T) {
 			{2, -12},
 			{1, -5},
 		})
-		if math.Abs(e.𝜦+2) > 1e-4 {
-			t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e.𝜦, e.𝜦+2)
+		if math.Abs(e[0].𝜦+2) > 1e-4 {
+			t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e[0].𝜦, e[0].𝜦+2)
 		}
 		if err != nil {
 			t.Fatal(err)
@@ -228,8 +235,8 @@ func Test(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if math.Abs(e.𝜦-2) > 1e-4 {
-			t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e.𝜦, e.𝜦+2)
+		if math.Abs(e[0].𝜦-2) > 1e-4 {
+			t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e[0].𝜦, e[0].𝜦+2)
 		}
 		_ = e
 	})
@@ -249,8 +256,8 @@ func Test(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if math.Abs(e.𝜦-5) > 1e-4 {
-			t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e.𝜦, e.𝜦+2)
+		if math.Abs(e[0].𝜦-5) > 1e-4 {
+			t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e[0].𝜦, e[0].𝜦+2)
 		}
 		_ = e
 	})
@@ -270,8 +277,8 @@ func Test(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if math.Abs(e.𝜦-5) > 1e-4 {
-			t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e.𝜦, e.𝜦+2)
+		if math.Abs(e[0].𝜦-5) > 1e-4 {
+			t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e[0].𝜦, e[0].𝜦+2)
 		}
 		_ = e
 	})
@@ -410,12 +417,12 @@ func ExampleInitByEigenvector1and2() {
 			{2, -12},
 			{1, -5},
 		})
-		if err != nil {
-			panic(err)
-		}
 		fmt.Printf("ratio: %8.7f x: [%3.2f %8.7f]. Result: 𝜦=%6.4f 𝑿=[%6.4f %6.4f]\n",
 			value, 1.0, 0.25*value+0.33333333333333333*(1.0-value),
-			e.𝜦, e.𝑿[0], e.𝑿[1])
+			e[0].𝜦, e[0].𝑿[0], e[0].𝑿[1])
+		if err != nil {
+			fmt.Fprintln(os.Stdout, err)
+		}
 	}
 
 	// Output:

@@ -68,10 +68,9 @@ func Test(t *testing.T) {
 			{1, 0},
 			{0, -1},
 		})
-		if err == nil {
+		if err != nil {
 			t.Fatal(err)
 		}
-		t.Log(err)
 		_ = e
 	})
 	t.Run("No dominant: 2", func(t *testing.T) {
@@ -80,10 +79,9 @@ func Test(t *testing.T) {
 			{0, 2, 0},
 			{0, 0, 1},
 		})
-		if err == nil {
+		if err != nil {
 			t.Fatal(err)
 		}
-		t.Log(err)
 		_ = e
 	})
 	t.Run("No dominant: 3", func(t *testing.T) {
@@ -91,10 +89,9 @@ func Test(t *testing.T) {
 			{-3, 0},
 			{1, 3},
 		})
-		if err == nil {
+		if err != nil {
 			t.Fatal(err)
 		}
-		t.Log(err)
 		_ = e
 	})
 
@@ -371,9 +368,9 @@ func Test(t *testing.T) {
 	t.Run("Fadeev: example 5. page 335", func(t *testing.T) {
 		old := initialize
 		initialize = func(x []float64) {
-			x[0] = 1.0
-			x[1] = 1.0
-			x[2] = -1.0
+			x[0] = 0.2
+			x[1] = 0.4
+			x[2] = 0.6
 		}
 		defer func() {
 			initialize = old

@@ -81,10 +81,6 @@ func pm(A [][]float64) (e eigen, err error) {
 	var (
 		x     = make([]float64, n)
 		xLast = make([]float64, n)
-
-		// result of summ
-		// x(k-2)
-		xk2 = make([]float64, n)
 	)
 
 	// инициализация произвольным вектором
@@ -93,16 +89,16 @@ func pm(A [][]float64) (e eigen, err error) {
 	// add random seed
 	rand.Seed(time.Now().UnixNano())
 
-	// глобальное количество итераций
-	var globalIteration int64
-
+	// переменные для организации итераций
 	var maxIteration int64 = 500
 	var iter int64 = 0
 
-	for ; ; iter++ {
-		globalIteration++
-		if globalIteration > maxIteration {
-			err = fmt.Errorf("global iteration limit. please send to developer")
+	for {
+
+		// устанавливаем лимит на количество итераций
+		iter++
+		if iter > maxIteration {
+			err = fmt.Errorf("Iteration limit")
 			return
 		}
 
@@ -115,23 +111,23 @@ func pm(A [][]float64) (e eigen, err error) {
 		}
 
 		// x(k) = z(k) / || z(k) ||
-		{
-			max := z[0]
-			for i := range z {
-				if math.Abs(z[i]) > math.Abs(max) {
-					max = z[i]
-				}
-			}
-			if max == 0.0 {
-				err = fmt.Errorf("all values of eigenvector is zeros")
-				return
-			}
-			for i := range x {
-				x[i] = z[i] / max
-			}
+		err = oneMax(x, z)
+		if err != nil {
+			return
 		}
 
-		lambda := λ(A, x)
+		// проверка на парность
+		if iter%3 == 0 {
+			lambda := λ(A, x)
+			for i := range x {
+				x[i] = x[i] + lambda*xLast[i]
+			}
+			err = oneMax(x, x)
+			if err != nil {
+				return
+			}
+			continue
+		}
 
 		// отображаем результат каждой итерации
 		if output {
@@ -140,15 +136,7 @@ func pm(A [][]float64) (e eigen, err error) {
 
 		// ||x(k-1)-x(k-2)|| > 𝛆
 		if iter > 0 {
-			var max float64
-			for i := range x {
-				e := math.Abs(x[i] - xLast[i])
-				if e > max {
-					max = e
-				}
-			}
-
-			if max < 𝛆 {
+			if eMax(x, xLast) < 𝛆 {
 				// на случай слишком быстрой сходимости,
 				// добавим возмущения
 				if iter < 3 {
@@ -166,7 +154,6 @@ func pm(A [][]float64) (e eigen, err error) {
 						// factor  :  0.0   0.25   0.5   0.25  0.0  0.25  0.5  0.25  0.0
 						x[i] += perturbation*factor*factor + offset*float64(i)/float64(n)
 					}
-					iter = 0 // сброс количества итераций
 					continue
 				}
 
@@ -176,53 +163,12 @@ func pm(A [][]float64) (e eigen, err error) {
 			}
 		}
 
-		// устанавливаем лимит на количество итераций
-		if iter > maxIteration {
-			err = fmt.Errorf("Iteration limit")
-			return
-		}
-
-		// обработка повторения значений х, но с изменением знака кроме 1.0
-		if iter > 0 {
-			isSame := true
-			for i := range x {
-				if x[i] != xk2[i] {
-					isSame = false
-					break
-				}
-			}
-			if isSame {
-				err = fmt.Errorf("Loop values x")
-				return
-			}
-		}
-
-		// значение х не изменяется кроме 1.0
-		if iter > 0 {
-			isSame := false
-			for i := range x {
-				if x[i] == 1.0 && xLast[i] == 1.0 {
-					continue
-				}
-				if x[i] == xLast[i] {
-					isSame = true
-					break
-				}
-			}
-			if isSame {
-				err = fmt.Errorf("one or more values of eigenvector is not change")
-				return
-			}
-		}
-
 		copy(xLast, x)
-		if iter%2 == 0 {
-			copy(xk2, x)
-		}
 	}
 
 	e.𝑿 = x
 	e.𝜦 = λ(A, x)
+
 	if output {
 		fmt.Println("e = ", e)
 	}
@@ -248,4 +194,33 @@ func λ(A [][]float64, x []float64) float64 {
 		xx += x[i] * x[i]
 	}
 	return Axx / xx
+}
+
+// x(k) = z(k) / || z(k) ||
+func oneMax(x, z []float64) (err error) {
+	max := z[0]
+	for i := range z {
+		if math.Abs(z[i]) > math.Abs(max) {
+			max = z[i]
+		}
+	}
+	if max == 0.0 {
+		err = fmt.Errorf("all values of eigenvector is zeros")
+		return
+	}
+	for i := range x {
+		x[i] = z[i] / max
+	}
+	return
+}
+
+// ||x(k-1)-x(k-2)|| > 𝛆
+func eMax(x, xLast []float64) (eMax float64) {
+	for i := range x {
+		e := math.Abs(x[i] - xLast[i])
+		if e > eMax {
+			eMax = e
+		}
+	}
+	return
 }

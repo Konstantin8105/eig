@@ -117,10 +117,10 @@ func pm(A [][]float64) (e eigen, err error) {
 		}
 
 		// проверка на парность
-		if iter%3 == 0 {
+		if iter > 0 && iter%5 == 0 {
 			lambda := λ(A, x)
 			for i := range x {
-				x[i] = x[i] + lambda*xLast[i]
+				x[i], xLast[i] = x[i]+lambda*xLast[i], x[i]-lambda*xLast[i]
 			}
 			err = oneMax(x, x)
 			if err != nil {

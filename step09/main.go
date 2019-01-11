@@ -131,6 +131,8 @@ func pm(A [][]float64) (e eigen, err error) {
 			}
 		}
 
+		lambda := λ(A, x)
+
 		// отображаем результат каждой итерации
 		if output {
 			fmt.Printf("iter: %2d\tx = %v\n", iter, x)
@@ -219,9 +221,18 @@ func pm(A [][]float64) (e eigen, err error) {
 		}
 	}
 
-	// λ = (Ax , x) / (x , x)
 	e.𝑿 = x
+	e.𝜦 = λ(A, x)
+	if output {
+		fmt.Println("e = ", e)
+	}
 
+	return
+}
+
+// λ = (Ax , x) / (x , x)
+func λ(A [][]float64, x []float64) float64 {
+	n := len(A)
 	Ax := make([]float64, n)
 	for row := 0; row < n; row++ {
 		for col := 0; col < n; col++ {
@@ -236,12 +247,5 @@ func pm(A [][]float64) (e eigen, err error) {
 	for i := range x {
 		xx += x[i] * x[i]
 	}
-
-	e.𝜦 = Axx / xx
-
-	if output {
-		fmt.Println("e = ", e)
-	}
-
-	return
+	return Axx / xx
 }

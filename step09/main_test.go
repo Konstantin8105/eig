@@ -332,6 +332,62 @@ func Test(t *testing.T) {
 		}
 		_ = e
 	})
+
+	t.Run("Fadeev: example 2. page 332", func(t *testing.T) {
+		e, err := check([][]float64{
+			{-5.509882, 1.870086, 0.422908},
+			{0.287865, -11.811654, 5.711900},
+			{0.049099, 4.308033, -12.970687},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = e
+	})
+	t.Run("Fadeev: example 3. page 333", func(t *testing.T) {
+		e, err := check([][]float64{
+			{0.22, 0.02, 0.12, 0.14},
+			{0.02, 0.14, 0.04, -0.06},
+			{0.12, 0.04, 0.28, 0.08},
+			{0.14, -0.06, 0.08, 0.26},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = e
+	})
+	t.Run("Fadeev: example 4. page 334", func(t *testing.T) {
+		e, err := check([][]float64{
+			{1.022551, 0.116069, -0.287028, -0.429969},
+			{0.228401, 0.742521, -0.176368, -0.283720},
+			{0.326141, 0.097221, 0.197209, -0.216487},
+			{0.433864, 0.148965, -0.193686, 0.006472},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = e
+	})
+	t.Run("Fadeev: example 5. page 335", func(t *testing.T) {
+		old := initialize
+		initialize = func(x []float64) {
+			x[0] = 1.0
+			x[1] = 1.0
+			x[2] = -1.0
+		}
+		defer func() {
+			initialize = old
+		}()
+		e, err := check([][]float64{
+			{4.2, -3.4, 0.3},
+			{4.7, -3.9, 0.3},
+			{-5.6, 5.2, 0.1},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = e
+	})
 }
 
 func ExampleInitByEigenvector1and2() {

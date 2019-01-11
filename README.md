@@ -411,40 +411,40 @@ Delta = 7.3807622813e-07
 
 Добавим обработку ошибок для теста Е3:
 ```golang
-		// обработка повторения значений х, но с изменением знака кроме 1.0
-		isSame := true
-		for i := range x {
-			if x[i] == 1.0 {
-				continue
-			}
-			if x[i] != -xLast[i] {
-				isSame = false
-				break
-			}
-		}
-		if isSame {
-			err = fmt.Errorf("Loop values x")
-			return
-		}
+// обработка повторения значений х, но с изменением знака кроме 1.0
+isSame := true
+for i := range x {
+	if x[i] == 1.0 {
+		continue
+	}
+	if x[i] != -xLast[i] {
+		isSame = false
+		break
+	}
+}
+if isSame {
+	err = fmt.Errorf("Loop values x")
+	return
+}
 ```
 
 Добавим обработку ошибок для теста Е4:
 ```golang
-		// значение х не изменяется кроме 1.0
-		isSame = false
-		for i := range x {
-			if x[i] == 1.0 && xLast[i] == 1.0 {
-				continue
-			}
-			if x[i] == xLast[i] {
-				isSame = true
-				break
-			}
-		}
-		if isSame {
-			err = fmt.Errorf("one or more values of eigenvector is not change")
-			return
-		}
+// значение х не изменяется кроме 1.0
+isSame = false
+for i := range x {
+	if x[i] == 1.0 && xLast[i] == 1.0 {
+		continue
+	}
+	if x[i] == xLast[i] {
+		isSame = true
+		break
+	}
+}
+if isSame {
+	err = fmt.Errorf("one or more values of eigenvector is not change")
+	return
+}
 ```
 
 Посмотрим на результаты:
@@ -492,26 +492,26 @@ ok  	github.com/Konstantin8105/eig/step01	0.003s
 Переименуем тесты на более подходящие и добавим тесты с разным соотношением
 свободных значений.
 ```golang
-	t.Run("Low ratio : |𝜦2|/|𝜦1| = 0.1", func(t *testing.T) {
-		e, err := check([][]float64{
-			{4, 5},
-			{6, 5},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		_ = e
+t.Run("Low ratio : |𝜦2|/|𝜦1| = 0.1", func(t *testing.T) {
+	e, err := check([][]float64{
+		{4, 5},
+		{6, 5},
 	})
-	t.Run("Big ratio : |𝜦2|/|𝜦1| = 0.9", func(t *testing.T) {
-		e, err := check([][]float64{
-			{-4, 10},
-			{7, 5},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		_ = e
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = e
+})
+t.Run("Big ratio : |𝜦2|/|𝜦1| = 0.9", func(t *testing.T) {
+	e, err := check([][]float64{
+		{-4, 10},
+		{7, 5},
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = e
+})
 ```
 
 В результате видно что чем больше соотношение |𝜦2|/|𝜦1|, тем больше необходимо 
@@ -558,24 +558,23 @@ A · n · x = λ · n · x
 
 Добавим код:
 ```golang
-	// масштабирование
-	scale := 250.0 // пока это произвольное число
+// масштабирование
+scale := 250.0 // пока это произвольное число
+for row := 0; row < n; row++ {
+	for col := 0; col < n; col++ {
+		A[row][col] *= scale
+	}
+}
+defer func() {
 	for row := 0; row < n; row++ {
 		for col := 0; col < n; col++ {
-			A[row][col] *= scale
+			A[row][col] /= scale
 		}
 	}
-	defer func() {
-		for row := 0; row < n; row++ {
-			for col := 0; col < n; col++ {
-				A[row][col] /= scale
-			}
-		}
-		if err == nil {
-			e.𝜦 /= scale
-		}
-	}()
-
+	if err == nil {
+		e.𝜦 /= scale
+	}
+}()
 ```
 
 Сравнение результатов:
@@ -679,87 +678,87 @@ Delta = 6.7500719937e-06
 Добавим тестов для проверки ситуации входной матрицы размером 0х0 или
 матрица `nil`.
 ```golang
-	t.Run("matrix size: zero", func(t *testing.T) {
-		e, err := check([][]float64{})
-		if err != nil {
-			t.Fatal(err)
-		}
-		_ = e
-	})
-	t.Run("matrix size: nil", func(t *testing.T) {
-		e, err := check(nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-		_ = e
-	})
+t.Run("matrix size: zero", func(t *testing.T) {
+	e, err := check([][]float64{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = e
+})
+t.Run("matrix size: nil", func(t *testing.T) {
+	e, err := check(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = e
+})
 ```
 
 Добавим следующий код для отработки матриц нулевого размера:
 ```golang
-	n := len(A)
-	if n == 0 {
-		err = fmt.Errorf("matrix size is zero")
-		return
-	}
+n := len(A)
+if n == 0 {
+	err = fmt.Errorf("matrix size is zero")
+	return
+}
 ```
 
 Проверим случай с прямоугольной матрицей - этот случай является ошибкой.
 ```golang
-	t.Run("matrix size: rectangle", func(t *testing.T) {
-		e, err := check([][]float64{
-			{4, 12, 23, 34},
-			{2, 34},
-		})
-		if err == nil {
-			t.Fatal(err)
-		}
-		t.Log(err)
-		_ = e
+t.Run("matrix size: rectangle", func(t *testing.T) {
+	e, err := check([][]float64{
+		{4, 12, 23, 34},
+		{2, 34},
 	})
+	if err == nil {
+		t.Fatal(err)
+	}
+	t.Log(err)
+	_ = e
+})
 ```
 Добавим следующий код для отработки данного случая:
 ```golang
-	// проверка на квадратность входной матрицы
-	for row := 0; row < len(A); row++ {
-		if len(A[row]) != n {
-			err = fmt.Errorf("input matrix is not square in row %d: [%d,%d]", row, n, len(A[row]))
-			return
-		}
+// проверка на квадратность входной матрицы
+for row := 0; row < len(A); row++ {
+	if len(A[row]) != n {
+		err = fmt.Errorf("input matrix is not square in row %d: [%d,%d]", row, n, len(A[row]))
+		return
 	}
+}
 ```
 
 Проверим случай с размером матрица 1х1.
 ```golang
-	t.Run("matrix size: one", func(t *testing.T) {
-		e, err := check([][]float64{
-			{4},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		_ = e
+t.Run("matrix size: one", func(t *testing.T) {
+	e, err := check([][]float64{
+		{4},
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = e
+})
 ```
 Это простой частный случай и для его отработки добавим следующее:
 ```golang
-	// для случая матрица 1х1
-	if n == 1 {
-		e.𝑿 = []float64{1.0}
-		e.𝜦 = A[0][0]
-		return
-	}
+// для случая матрица 1х1
+if n == 1 {
+	e.𝑿 = []float64{1.0}
+	e.𝜦 = A[0][0]
+	return
+}
 ```
 
 ## step05: исследование начального вектора `х`
 
 У нас изначально реализован рандомизированная задача начального вектора `x`.
 ```golang
-	// инициализация произвольным вектором
-	rand.Seed(time.Now().UnixNano())
-	for i := range x {
-		x[i] = rand.Float64() // [0.0, 1)
-	}
+// инициализация произвольным вектором
+rand.Seed(time.Now().UnixNano())
+for i := range x {
+	x[i] = rand.Float64() // [0.0, 1)
+}
 ```
 
 Модифицируем код для задания требуемых значений начального вектора.
@@ -785,26 +784,26 @@ var initialize func([]float64) = random
 
 Добавим тест с инициализатором нулями:
 ```golang
-	t.Run("initialize by zeros", func(t *testing.T) {
-		old := initialize
-		initialize = func(x []float64) {
-			for i := range x {
-				x[i] = 0.0
-			}
+t.Run("initialize by zeros", func(t *testing.T) {
+	old := initialize
+	initialize = func(x []float64) {
+		for i := range x {
+			x[i] = 0.0
 		}
-		defer func() {
-			initialize = old
-		}()
-		e, err := check([][]float64{
-			{2, -12},
-			{1, -5},
-		})
-		if err == nil {
-			t.Fatal(err)
-		}
-		t.Log(err)
-		_ = e
+	}
+	defer func() {
+		initialize = old
+	}()
+	e, err := check([][]float64{
+		{2, -12},
+		{1, -5},
 	})
+	if err == nil {
+		t.Fatal(err)
+	}
+	t.Log(err)
+	_ = e
+})
 ```
 Его результат предсказуем некорректен:
 ```
@@ -815,10 +814,10 @@ Delta = NaN
 ```
 Это легко отработать в ошибку:
 ```golang
-			if max == 0.0 {
-				err = fmt.Errorf("all values of eigenvector is zeros")
-				return
-			}
+if max == 0.0 {
+	err = fmt.Errorf("all values of eigenvector is zeros")
+	return
+}
 ```
 также стоит внести это в рандимизиронную функцию:
 ```golang
@@ -840,24 +839,24 @@ func random(x []float64) {
 
 Что если инициализировать точным значением свободного вектора 1 формы
 ```golang
-	t.Run("initialize by eigenvector1", func(t *testing.T) {
-		old := initialize
-		initialize = func(x []float64) {
-			x[0] = 1.0
-			x[1] = 0.3333333333333333
-		}
-		defer func() {
-			initialize = old
-		}()
-		e, err := check([][]float64{
-			{2, -12},
-			{1, -5},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		_ = e
+t.Run("initialize by eigenvector1", func(t *testing.T) {
+	old := initialize
+	initialize = func(x []float64) {
+		x[0] = 1.0
+		x[1] = 0.3333333333333333
+	}
+	defer func() {
+		initialize = old
+	}()
+	e, err := check([][]float64{
+		{2, -12},
+		{1, -5},
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = e
+})
 ```
 Результат предсказуемо положительный:
 ```
@@ -869,27 +868,27 @@ Delta = 1.1102230246e-16
 
 Что если инициализировать точным значением свободного вектора 2 формы
 ```golang
-	t.Run("initialize by eigenvector2", func(t *testing.T) {
-		old := initialize
-		initialize = func(x []float64) {
-			x[0] = 1.00
-			x[1] = 0.25
-		}
-		defer func() {
-			initialize = old
-		}()
-		e, err := check([][]float64{
-			{2, -12},
-			{1, -5},
-		})
-		if math.Abs(e.𝜦-(-2)) > 1e-5 {
-			t.Fatal("result is not correct")
-		}
-		if err != nil {
-			t.Fatal(err)
-		}
-		_ = e
+t.Run("initialize by eigenvector2", func(t *testing.T) {
+	old := initialize
+	initialize = func(x []float64) {
+		x[0] = 1.00
+		x[1] = 0.25
+	}
+	defer func() {
+		initialize = old
+	}()
+	e, err := check([][]float64{
+		{2, -12},
+		{1, -5},
 	})
+	if math.Abs(e.𝜦-(-2)) > 1e-5 {
+		t.Fatal("result is not correct")
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = e
+})
 ```
 Результат предсказуемый не неприемлемый, так как результат сходиться ко второму
 собственному значению.
@@ -958,35 +957,35 @@ func ExampleInitByEigenvector1and2() {
 необходимо не создавать вечного цикла.
 
 ```golang
-			if max < 𝛆 {
-				// на случай слишком быстрой сходимости,
-				// добавим возмущения
-				if iter < 3 {
-					// добавляем возмужение
-					perturbation := 0.02 * (1 + rand.Float64())
-					for i := range x {
-						// x[i] = [-1.0,...,1.0]
-						factor := math.Abs(x[i])
-						if factor > 0.5 {
-							factor = 1.0 - factor
-						}
-						// factor graph
-						// x[i]    tmp
-						// -1.0    0.0
-						// -0.75   0.25
-						// -0.5    0.5
-						// -0.25   0.25
-						//  0.0    0.0
-						//  0.25   0.25
-						//  0.5    0.5
-						//  0.75   0.25
-						//  1.0    0.0
-						x[i] += perturbation * factor * factor
-					}
-					iter = -1 // сброс количества итераций
-					continue
-				}
-			...
+if max < 𝛆 {
+	// на случай слишком быстрой сходимости,
+	// добавим возмущения
+	if iter < 3 {
+		// добавляем возмужение
+		perturbation := 0.02 * (1 + rand.Float64())
+		for i := range x {
+			// x[i] = [-1.0,...,1.0]
+			factor := math.Abs(x[i])
+			if factor > 0.5 {
+				factor = 1.0 - factor
+			}
+			// factor graph
+			// x[i]    tmp
+			// -1.0    0.0
+			// -0.75   0.25
+			// -0.5    0.5
+			// -0.25   0.25
+			//  0.0    0.0
+			//  0.25   0.25
+			//  0.5    0.5
+			//  0.75   0.25
+			//  1.0    0.0
+			x[i] += perturbation * factor * factor
+		}
+		iter = -1 // сброс количества итераций
+		continue
+	}
+...
 ```
 
 ## step06: матрица из нулей но не нулевого размера
@@ -994,17 +993,17 @@ func ExampleInitByEigenvector1and2() {
 Добавим тест:
 
 ```golang
-	t.Run("matrix with zeros", func(t *testing.T) {
-		e, err := check([][]float64{
-			{0.0, 0.0},
-			{0.0, 0.0},
-		})
-		if err == nil {
-			t.Fatal(err)
-		}
-		t.Log(err)
-		_ = e
+t.Run("matrix with zeros", func(t *testing.T) {
+	e, err := check([][]float64{
+		{0.0, 0.0},
+		{0.0, 0.0},
 	})
+	if err == nil {
+		t.Fatal(err)
+	}
+	t.Log(err)
+	_ = e
+})
 ```
 
 ```
@@ -1017,22 +1016,22 @@ func ExampleInitByEigenvector1and2() {
 Необходимо добавить обработку этой ошибки, следующим образом:
 
 ```golang
-	// матрица А не должна состоять из одних нулей
-	{
-		isAllZeros := true
-		for row := 0; row < n; row++ {
-			for col := 0; col < n; col++ {
-				if A[row][col] != 0.0 {
-					isAllZeros = false
-					break
-				}
+// матрица А не должна состоять из одних нулей
+{
+	isAllZeros := true
+	for row := 0; row < n; row++ {
+		for col := 0; col < n; col++ {
+			if A[row][col] != 0.0 {
+				isAllZeros = false
+				break
 			}
 		}
-		if isAllZeros {
-			err = fmt.Errorf("all elements of matrix is zeros")
-			return
-		}
 	}
+	if isAllZeros {
+		err = fmt.Errorf("all elements of matrix is zeros")
+		return
+	}
+}
 ```
 
 Теперь результат описания ошибки корректнее:
@@ -1050,27 +1049,27 @@ func ExampleInitByEigenvector1and2() {
 будут являться собственными значениями.
 
 ```golang
-	t.Run("lower triangle matrix", func(t *testing.T) {
-		e, err := check([][]float64{
-			{2, 1},
-			{0, -4},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		_ = e
+t.Run("lower triangle matrix", func(t *testing.T) {
+	e, err := check([][]float64{
+		{2, 1},
+		{0, -4},
 	})
-	t.Run("upper triangle matrix", func(t *testing.T) {
-		e, err := check([][]float64{
-			{2, 3, 1},
-			{0, -1, 2},
-			{0, 0, 3},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		_ = e
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = e
+})
+t.Run("upper triangle matrix", func(t *testing.T) {
+	e, err := check([][]float64{
+		{2, 3, 1},
+		{0, -1, 2},
+		{0, 0, 3},
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = e
+})
 ```
 
 Результат сходится до требуемой точности:
@@ -1100,84 +1099,84 @@ Delta = 1.5863821838e-06
 Тест:
 
 ```golang
-	t.Run("initialize specific : 1", func(t *testing.T) {
-		old := initialize
-		initialize = func(x []float64) {
-			x[0] = 5.0
-			x[1] = 2.0
-		}
-		defer func() {
-			initialize = old
-		}()
-		e, err := check([][]float64{
-			{4, -5},
-			{2, -3},
-		})
-		if math.Abs(e.𝜦-2) > 1e-4 {
-			t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e.𝜦, e.𝜦+2)
-		}
-		if err != nil {
-			t.Fatal(err)
-		}
-		_ = e
+t.Run("initialize specific : 1", func(t *testing.T) {
+	old := initialize
+	initialize = func(x []float64) {
+		x[0] = 5.0
+		x[1] = 2.0
+	}
+	defer func() {
+		initialize = old
+	}()
+	e, err := check([][]float64{
+		{4, -5},
+		{2, -3},
 	})
-	t.Run("initialize specific : 2", func(t *testing.T) {
-		old := initialize
-		initialize = func(x []float64) {
-			x[0] = -3.0
-			x[1] = 2.0
-		}
-		defer func() {
-			initialize = old
-		}()
-		e, err := check([][]float64{
-			{2, 3},
-			{1, 4},
-		})
-		if math.Abs(e.𝜦-5) > 1e-4 {
-			t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e.𝜦, e.𝜦+2)
-		}
-		if err != nil {
-			t.Fatal(err)
-		}
-		_ = e
+	if math.Abs(e.𝜦-2) > 1e-4 {
+		t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e.𝜦, e.𝜦+2)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = e
+})
+t.Run("initialize specific : 2", func(t *testing.T) {
+	old := initialize
+	initialize = func(x []float64) {
+		x[0] = -3.0
+		x[1] = 2.0
+	}
+	defer func() {
+		initialize = old
+	}()
+	e, err := check([][]float64{
+		{2, 3},
+		{1, 4},
 	})
+	if math.Abs(e.𝜦-5) > 1e-4 {
+		t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e.𝜦, e.𝜦+2)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = e
+})
 ```
 
 Пофиксим тест "initialize specific : 2":
 
 ```golang
-		// значение х не изменяется кроме 1.0
-		if iter > 0 {
-			isSame = false
-			...
-		}
+// значение х не изменяется кроме 1.0
+if iter > 0 {
+	isSame = false
+	...
+}
 ```
 
 Но вот ещё тест:
 
 ```golang
-	t.Run("initialize specific : 3", func(t *testing.T) {
-		old := initialize
-		initialize = func(x []float64) {
-			x[0] = 1.0
-			x[1] = 1.0
-		}
-		defer func() {
-			initialize = old
-		}()
-		e, err := check([][]float64{
-			{2, 3},
-			{1, 4},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if math.Abs(e.𝜦-5) > 1e-4 {
-			t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e.𝜦, e.𝜦+2)
-		}
-		_ = e
+t.Run("initialize specific : 3", func(t *testing.T) {
+	old := initialize
+	initialize = func(x []float64) {
+		x[0] = 1.0
+		x[1] = 1.0
+	}
+	defer func() {
+		initialize = old
+	}()
+	e, err := check([][]float64{
+		{2, 3},
+		{1, 4},
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if math.Abs(e.𝜦-5) > 1e-4 {
+		t.Fatalf("result is not correct: %.14e ---> prec = %.14e", e.𝜦, e.𝜦+2)
+	}
+	_ = e
+})
 ```
 
 В результате ошибка на корректные данные:
@@ -1198,22 +1197,22 @@ iter:  0	x = [1 1]
 Для решения этой проблемы изменим алгоритм возмущения:
 
 ```golang
-					// добавляем возмужение
-					perturbation := 0.02 * (1 + rand.Float64())
-					offset := 0.005
-					for i := range x {
-						// x[i] = [-1.0,...,1.0]
-						factor := math.Abs(x[i])
-						if factor > 0.5 {
-							factor = 1.0 - factor
-						}
-						// factor graph
-						// x[i]    : -1.0  -0.75  -0.5  -0.25  0.0  0.25  0.5  0.75  1.0
-						// factor  :  0.0   0.25   0.5   0.25  0.0  0.25  0.5  0.25  0.0
-						x[i] += perturbation*factor*factor + offset*float64(i)/float64(n)
-					}
-					iter = 0 // сброс количества итераций
-					continue
+// добавляем возмужение
+perturbation := 0.02 * (1 + rand.Float64())
+offset := 0.005
+for i := range x {
+	// x[i] = [-1.0,...,1.0]
+	factor := math.Abs(x[i])
+	if factor > 0.5 {
+		factor = 1.0 - factor
+	}
+	// factor graph
+	// x[i]    : -1.0  -0.75  -0.5  -0.25  0.0  0.25  0.5  0.75  1.0
+	// factor  :  0.0   0.25   0.5   0.25  0.0  0.25  0.5  0.25  0.0
+	x[i] += perturbation*factor*factor + offset*float64(i)/float64(n)
+}
+iter = 0 // сброс количества итераций
+continue
 ```
 
 Какова причина причина того, что используется возмущение, а не генерация
@@ -1226,26 +1225,26 @@ iter:  0	x = [1 1]
 Тест:
 
 ```golang
-	t.Run("initialize specific : 4", func(t *testing.T) {
-		old := initialize
-		initialize = func(x []float64) {
-			x[0] = 3.0
-			x[1] = 0.0
-			x[2] = 1.0
-		}
-		defer func() {
-			initialize = old
-		}()
-		e, err := check([][]float64{
-			{3, 2, -3},
-			{-3, -4, 9},
-			{-1, -2, 5},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		_ = e
+t.Run("initialize specific : 4", func(t *testing.T) {
+	old := initialize
+	initialize = func(x []float64) {
+		x[0] = 3.0
+		x[1] = 0.0
+		x[2] = 1.0
+	}
+	defer func() {
+		initialize = old
+	}()
+	e, err := check([][]float64{
+		{3, 2, -3},
+		{-3, -4, 9},
+		{-1, -2, 5},
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = e
+})
 ```
 
 Точное значение собственных векторов: `2, 2, 2e-16`.

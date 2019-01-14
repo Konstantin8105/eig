@@ -60,8 +60,18 @@ func generator(es []eigen) (A [][]float64) {
 	return
 }
 
+func MatrixPrint(A [][]float64) {
+	n := len(A)
+	for i := 0; i < n; i++ {
+		for j := 0; j < n; j++ {
+			fmt.Printf("|%+12.10f|", A[i][j])
+		}
+		fmt.Printf("\n")
+	}
+}
+
 func ExampleGenerator() {
-	A := generator([]eigen{
+	es := []eigen{
 		{
 			𝜦: 2.0,
 			𝑿: []float64{+0.5714286, +0.1428572, +1.0000000},
@@ -74,16 +84,24 @@ func ExampleGenerator() {
 			𝜦: -1.0,
 			𝑿: []float64{+0.5773503, +0.5773503, +0.5773503},
 		},
-	})
-	n := 3
-	for i := 0; i < n; i++ {
-		for j := 0; j < n; j++ {
-			fmt.Printf("|%+12.10f|", A[i][j])
-		}
-		fmt.Print("\n")
 	}
+	A := generator(es)
+	MatrixPrint(A)
+
+	fmt.Println("change 0 <=> 2")
+	es[0], es[2] = es[2], es[0]
+	for i := 0; i < 3; i++ {
+		es[i].𝑿[0], es[i].𝑿[2] = es[i].𝑿[2], es[i].𝑿[0]
+	}
+	A = generator(es)
+	MatrixPrint(A)
+
 	// Output:
 	// |+1.0000003000||-3.0000003833||+1.0000000833|
 	// |+3.0000003000||-3.0000003833||-0.9999999167|
 	// |+3.0000003000||-5.0000003833||+1.0000000833|
+	// change 0 <=> 2
+	// |+1.0000000833||-5.0000003833||+3.0000003000|
+	// |-0.9999999167||-3.0000003833||+3.0000003000|
+	// |+1.0000000833||-3.0000003833||+1.0000003000|
 }

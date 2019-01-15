@@ -115,7 +115,6 @@ func exh(A [][]float64) (e []eigen, err error) {
 	}
 
 	for value := 0; value < n; value++ {
-		MatrixPrint(A)
 
 		// инициализация произвольным вектором
 		u := make([]float64, n)
@@ -186,7 +185,7 @@ func exh(A [][]float64) (e []eigen, err error) {
 		if i == 0 {
 			continue
 		}
-		if math.Abs(e[i-1].𝜦) < math.Abs(e[i].𝜦) {
+		if math.Abs(e[i-1].𝜦)+𝛆 < math.Abs(e[i].𝜦) {
 			err = fmt.Errorf("eigen values is not less. %.14e !> %.14e",
 				math.Abs(e[i-1].𝜦), math.Abs(e[i].𝜦))
 		}
@@ -216,7 +215,7 @@ func random(x []float64) {
 var initialize func([]float64) = random
 
 // выводить на экран
-var output bool = true
+var output bool = false // true
 
 // λ = (Ax , x) / (x , x)
 func λ(A [][]float64, x []float64) float64 {

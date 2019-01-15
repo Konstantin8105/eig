@@ -1,11 +1,20 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"testing"
 )
 
 func ExampleSimple() {
+
+	// output true
+	oldOut := output
+	output = false
+	defer func() {
+		output = oldOut
+	}()
+
 	es := []eigen{
 		{𝜦: +2.0, 𝑿: []float64{+0.5714286, +0.1428572, +1.0000000}},
 		{𝜦: -5.0, 𝑿: []float64{-0.6666667, -1.0000000, -1.0000000}},
@@ -14,7 +23,10 @@ func ExampleSimple() {
 
 	A := generator(es)
 	MatrixPrint(A)
+	output = true
+	fmt.Println("Before")
 	PrintEigens(es)
+	output = false
 
 	// initialize
 	old := initialize
@@ -27,27 +39,23 @@ func ExampleSimple() {
 		initialize = old
 	}()
 
-	// output true
-	oldOut := output
-	output = true
-	defer func() {
-		output = oldOut
-	}()
-
 	// calculate
 	e, err := exh(A)
 	if err != nil {
 		panic(err)
 	}
+	output = true
+	fmt.Println("After")
 	PrintEigens(e)
+	output = false
 
 	// compare
-	compare(e, es)
+	output = true
+	fmt.Println(compare(e, es))
+	output = false
 
 	// Output:
-	// |       +7.0000012000||       -6.0000008333||       -2.0000003667|
-	// |      +12.0000012000||       -7.5000008333||       -5.5000003667|
-	// |      +12.0000012000||       -9.5000008333||       -3.5000003667|
+	// Before
 	// ---     0 ---
 	// 𝜦      = +2.0000000000e+00
 	// 𝑿[  0] = +5.7142860000e-01
@@ -63,28 +71,26 @@ func ExampleSimple() {
 	// 𝑿[  0] = +5.7735030000e-01
 	// 𝑿[  1] = +5.7735030000e-01
 	// 𝑿[  2] = +5.7735030000e-01
-	// iter:  1	x=	5.64103e-01	1.00000e+00	8.97436e-01
-	// iter:  2	x=	6.55022e-01	9.65066e-01	1.00000e+00
-	// iter:  3	x=	6.57117e-01	1.00000e+00	9.85676e-01
-	// iter:  4	x=	6.65724e-01	9.94343e-01	1.00000e+00
-	// iter:  5	x=	6.65339e-01	1.00000e+00	9.97723e-01
-	// iter:  6	x=	6.66553e-01	9.99091e-01	1.00000e+00
-	// iter:  7	x=	6.66462e-01	1.00000e+00	9.99636e-01
-	// iter:  8	x=	6.66650e-01	9.99854e-01	1.00000e+00
-	// iter:  9	x=	6.66634e-01	1.00000e+00	9.99942e-01
-	// iter: 10	x=	6.66664e-01	9.99977e-01	1.00000e+00
-	// iter: 11	x=	6.66662e-01	1.00000e+00	9.99991e-01
-	// iter: 12	x=	6.66666e-01	9.99996e-01	1.00000e+00
-	// iter: 13	x=	6.66666e-01	1.00000e+00	9.99999e-01
-	// iter: 14	x=	6.66667e-01	9.99999e-01	1.00000e+00
-	// iter: 15	x=	6.66667e-01	1.00000e+00	1.00000e+00
-	// iter: 16	x=	6.66667e-01	1.00000e+00	1.00000e+00
+	// After
 	// ---     0 ---
 	// 𝜦      = -4.9999995141e+00
 	// 𝑿[  0] = +6.6666668939e-01
 	// 𝑿[  1] = +9.9999990456e-01
 	// 𝑿[  2] = +1.0000000000e+00
+	// ---     1 ---
+	// 𝜦      = +1.9999997398e+00
+	// 𝑿[  0] = +5.7142183122e-01
+	// 𝑿[  1] = +1.4279607663e-01
+	// 𝑿[  2] = +1.0000000000e+00
+	// ---     2 ---
+	// 𝜦      = -1.0000000000e+00
+	// 𝑿[  0] = +9.9999999640e-01
+	// 𝑿[  1] = +1.0000000000e+00
+	// 𝑿[  2] = +9.9999992052e-01
 	// Compare [  0,  1] is same
+	// Compare [  1,  0] is same
+	// Compare [  2,  2] is same
+	// true
 }
 
 func TestSnippets(t *testing.T) {
@@ -145,6 +151,10 @@ func TestSnippets(t *testing.T) {
 	})
 }
 
+func init() {
+	output = flag.CommandLine.Lookup("test.v").Value.String() == "true"
+}
+
 func Test(t *testing.T) {
 	// initialize
 	old := initialize
@@ -155,13 +165,6 @@ func Test(t *testing.T) {
 	}
 	defer func() {
 		initialize = old
-	}()
-
-	// output true
-	oldOut := output
-	output = true
-	defer func() {
-		output = oldOut
 	}()
 
 	tcs := []struct {
@@ -247,7 +250,9 @@ func Test(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			fmt.Println(tc.name)
+			if output {
+				fmt.Println(tc.name)
+			}
 
 			// generate
 			A := generator(tc.es)

@@ -137,17 +137,20 @@ func exh(A [][]float64) (e []eigen, err error) {
 		}
 
 		// нормализация
-		for i := len(u) - 1; i >= 0; i-- {
-			u[i] /= u[0]
-			v[i] /= v[0]
+		_, err = oneMax(u, u)
+		if err != nil {
+			return
 		}
-		c := 0.0
+		_, err = oneMax(v, v)
+		if err != nil {
+			return
+		}
+		var pro float64
 		for i := range u {
-			c += u[i] * u[i]
+			pro += u[i] * v[i]
 		}
-		c = math.Sqrt(1.0 - 1.0/math.Sqrt(c))
-		for i := range v {
-			v[i] *= c
+		for i := range u {
+			v[i] /= pro
 		}
 
 		// проверка V'*U = 1
@@ -162,9 +165,6 @@ func exh(A [][]float64) (e []eigen, err error) {
 				return
 			}
 		}
-
-		fmt.Println("u = ", u)
-		fmt.Println("v = ", v)
 
 		// метод исчерпывания
 		Atmp := make([][]float64, n)

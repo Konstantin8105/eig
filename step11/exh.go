@@ -53,65 +53,144 @@ func exh(A [][]float64) (e []eigen, err error) {
 	// add random seed
 	rand.Seed(time.Now().UnixNano())
 
-	// инициализация произвольным вектором
-	x := make([]float64, n)
-	initialize(x)
-
 	// переменные для организации итераций
-	var maxIteration int64 = 500
+	var maxIteration int64 = 5000
 	var iter int64 = 0
 
-	for max, maxLast, z := 0.0, 0.0, make([]float64, n); ; {
-		// устанавливаем лимит на количество итераций
-		iter++
-		if iter > maxIteration {
-			err = fmt.Errorf("Iteration limit")
-			return
-		}
-
-		// z(k) = A · x(k-1)
-		for row := 0; row < n; row++ {
-			z[row] = 0.0
-		}
-		for row := 0; row < n; row++ {
-			for col := 0; col < n; col++ {
-				z[row] += A[row][col] * x[col]
+	get := func(x []float64, trans bool) (err error) {
+		for max, maxLast, z := 0.0, 0.0, make([]float64, n); ; {
+			// устанавливаем лимит на количество итераций
+			iter++
+			if iter > maxIteration {
+				err = fmt.Errorf("Iteration limit")
+				return
 			}
-		}
 
-		// x(k) = z(k) / || z(k) ||
-		max, err = oneMax(x, z)
+			// z(k) = A · x(k-1)
+			for row := 0; row < n; row++ {
+				z[row] = 0.0
+			}
+			for row := 0; row < n; row++ {
+				for col := 0; col < n; col++ {
+					if trans {
+						z[row] += A[col][row] * x[col]
+						continue
+					}
+					z[row] += A[row][col] * x[col]
+				}
+			}
+
+			// x(k) = z(k) / || z(k) ||
+			max, err = oneMax(x, z)
+			if err != nil {
+				return
+			}
+
+			// отображаем результат каждой итерации
+			if output {
+				fmt.Printf("iter: %2d\tx=", iter)
+				for i := range x {
+					fmt.Printf("\t%10.5e", x[i])
+				}
+				fmt.Printf("\n")
+			}
+
+			// ||x(k-1)-x(k-2)|| > 𝛆
+			if iter > 0 {
+				if math.Abs((max-maxLast)/max) < 𝛆 { // eMax(x, xLast) < 𝛆
+					if iter < 3 {
+						// на случай слишком быстрой сходимости
+						random(x)
+						continue
+					}
+
+					// проверка результата, выходим из итераций
+					break
+				}
+			}
+
+			maxLast, max = max, maxLast
+		}
+		return
+	}
+
+	for value := 0; value < n; value++ {
+		MatrixPrint(A)
+
+		// инициализация произвольным вектором
+		u := make([]float64, n)
+		initialize(u)
+		err = get(u, false)
 		if err != nil {
 			return
 		}
 
-		// отображаем результат каждой итерации
-		if output {
-			fmt.Printf("iter: %2d\tx=", iter)
-			for i := range x {
-				fmt.Printf("\t%10.5e", x[i])
-			}
-			fmt.Printf("\n")
+		l := λ(A, u)
+		e = append(e, eigen{𝑿: u, 𝜦: l})
+
+		// инициализация произвольным вектором
+		v := make([]float64, n)
+		initialize(v)
+		err = get(v, true)
+		if err != nil {
+			return
 		}
 
-		// ||x(k-1)-x(k-2)|| > 𝛆
-		if iter > 0 {
-			if math.Abs((max-maxLast)/max) < 𝛆 { // eMax(x, xLast) < 𝛆 {
-				if iter < 3 {
-					// на случай слишком быстрой сходимости
-					random(x)
-					continue
-				}
+		// нормализация
+		for i := len(u) - 1; i >= 0; i-- {
+			u[i] /= u[0]
+			v[i] /= v[0]
+		}
+		c := 0.0
+		for i := range u {
+			c += u[i] * u[i]
+		}
+		c = math.Sqrt(1.0 - 1.0/math.Sqrt(c))
+		for i := range v {
+			v[i] *= c
+		}
 
-				// проверка результата, выходим из итераций
-				break
+		// проверка V'*U = 1
+		{
+			res := 0.0
+			for i := range u {
+				res += v[i] * u[i]
+			}
+			if math.Abs(res) > 1+1e-1 || math.Abs(res) < 1-1e-1 {
+				err = fmt.Errorf("check is not ok. V'*U = %.14e != 1\nu = %v\nv = %v",
+					res, u, v)
+				return
 			}
 		}
 
-		maxLast, max = max, maxLast
+		fmt.Println("u = ", u)
+		fmt.Println("v = ", v)
+
+		// метод исчерпывания
+		Atmp := make([][]float64, n)
+		for i := 0; i < n; i++ {
+			Atmp[i] = make([]float64, n)
+		}
+
+		for row := 0; row < n; row++ {
+			for col := 0; col < n; col++ {
+				Atmp[row][col] = A[row][col] - l*u[row]*v[col]
+			}
+		}
+
+		A = Atmp
 	}
 
-	e = append(e, eigen{𝑿: x, 𝜦: λ(A, x)})
+	for i := range e {
+		oneMax(e[i].𝑿, e[i].𝑿)
+		if i == 0 {
+			continue
+		}
+		if math.Abs(e[i-1].𝜦) < math.Abs(e[i].𝜦) {
+			err = fmt.Errorf("eigen values is not less. %.14e !> %.14e",
+				math.Abs(e[i-1].𝜦), math.Abs(e[i].𝜦))
+		}
+	}
 
 	return
 }

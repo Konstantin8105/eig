@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"testing"
 )
@@ -151,9 +150,9 @@ func TestSnippets(t *testing.T) {
 	})
 }
 
-func init() {
-	output = flag.CommandLine.Lookup("test.v").Value.String() == "true"
-}
+// func init() {
+// 	output = flag.CommandLine.Lookup("test.v").Value.String() == "true"
+// }
 
 func Test(t *testing.T) {
 	// initialize

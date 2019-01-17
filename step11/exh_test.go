@@ -93,6 +93,14 @@ func ExampleSimple() {
 }
 
 func TestSnippets(t *testing.T) {
+
+	// output true
+	oldOut := output
+	output = true
+	defer func() {
+		output = oldOut
+	}()
+
 	t.Run("Fadeev: page 334", func(t *testing.T) {
 		e, err := exh([][]float64{
 			{1.022551, 0.116069, -0.287028, -0.429969},
@@ -147,6 +155,48 @@ func TestSnippets(t *testing.T) {
 		//   - 0.6581452  - 0.5402572  - 0.6256402    0.7876832
 		//   - 4.600D-12    0.0339784    0.0343758  - 0.0423486
 		//     0.6581452    0.8392675    0.7768938  - 0.6013495
+	})
+	t.Run("D", func(t *testing.T) {
+		// initialize
+		old := initialize
+		initialize = func(x []float64) {
+			for i := range x {
+				x[i] = 1.0
+			}
+		}
+		defer func() {
+			initialize = old
+		}()
+		e, err := exh([][]float64{
+			{17, -2, -2},
+			{-2, 14, -4},
+			{-2, -4, 14},
+		})
+		PrintEigens(e)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !compare(e, []eigen{
+			{𝜦: 18.0, 𝑿: []float64{0.8944272, -0.4472136, 0.00000}},
+			{𝜦: 18.0, 𝑿: []float64{-0.2981424, -0.5962848, 0.7453560}},
+			{𝜦: +9.0, 𝑿: []float64{0.5, 1.0, 1.0}},
+		}) {
+			t.Errorf("not same")
+		}
+		//
+		// A=[17 -2 -2; -2 14 -4; -2 -4 14];[S,P]=spec(A)
+		//  P  =
+		//
+		//     9.    0.     0.
+		//     0.    18.    0.
+		//     0.    0.     18.
+		//  S  =
+		//
+		//     0.3333333  - 0.2981424    0.8944272
+		//     0.6666667  - 0.5962848  - 0.4472136
+		//     0.6666667    0.7453560    0.
+		//
 	})
 }
 

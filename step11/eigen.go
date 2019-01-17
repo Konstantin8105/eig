@@ -56,6 +56,9 @@ func compare(e, es []eigen) bool {
 				}
 				break
 			}
+			if output {
+				fmt.Printf("Compare [%3d,%3d] is not same\n", i, j)
+			}
 		}
 	}
 	isSameEigen := found == len(e) && found == len(es)

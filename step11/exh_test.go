@@ -167,6 +167,33 @@ func TestSnippets(t *testing.T) {
 		defer func() {
 			initialize = old
 		}()
+
+		eig := []eigen{
+			{𝜦: 18.0, 𝑿: []float64{0.8944272, -0.4472136, 0.00000}},
+			{𝜦: 18.0, 𝑿: []float64{-0.2981424, -0.5962848, 0.7453560}},
+			{𝜦: +9.0, 𝑿: []float64{0.5, 1.0, 1.0}},
+		}
+
+		output = true
+
+		// compare with another vectors
+		MatrixPrint(generator(eig))
+		MatrixPrint(generator([]eigen{
+			{𝜦: 18.0, 𝑿: []float64{1.0, 0.0, -0.5}},
+			{𝜦: 18.0, 𝑿: []float64{0.0, 1.0, -1.0}},
+			{𝜦: +9.0, 𝑿: []float64{0.5, 1.0, 1.0}},
+		}))
+		MatrixPrint(generator([]eigen{
+			{𝜦: 18.0, 𝑿: []float64{-1.0, 0.5, 0.0}},
+			{𝜦: 18.0, 𝑿: []float64{-1.0, 0.0, 0.5}},
+			{𝜦: +9.0, 𝑿: []float64{0.5, 1.0, 1.0}},
+		}))
+		MatrixPrint(generator([]eigen{
+			{𝜦: 18.0, 𝑿: []float64{1.0, -0.5, 0.0}},
+			{𝜦: 18.0, 𝑿: []float64{0.0, -1.0, 1.0}},
+			{𝜦: +9.0, 𝑿: []float64{0.5, 1.0, 1.0}},
+		}))
+
 		e, err := exh([][]float64{
 			{17, -2, -2},
 			{-2, 14, -4},
@@ -177,11 +204,7 @@ func TestSnippets(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if !compare(e, []eigen{
-			{𝜦: 18.0, 𝑿: []float64{0.8944272, -0.4472136, 0.00000}},
-			{𝜦: 18.0, 𝑿: []float64{-0.2981424, -0.5962848, 0.7453560}},
-			{𝜦: +9.0, 𝑿: []float64{0.5, 1.0, 1.0}},
-		}) {
+		if !compare(e, eig) {
 			t.Errorf("not same")
 		}
 		//
@@ -343,4 +366,52 @@ func Test(t *testing.T) {
 	}
 
 	// Output:
+}
+
+func TestGauss(t *testing.T) {
+
+	// output true
+	oldOut := output
+	output = true
+	defer func() {
+		output = oldOut
+	}()
+
+	// A := [][]float64{
+	// {-1, -3, -1, 2, 2},
+	// {-1, -7, -2, 1, 2},
+	// {-1, -11, -3, 0, 2},
+	// {-2, -2, -1, 5, 4},
+	// }
+
+	// A := [][]float64{
+	// {-1, -2, -2},
+	// {-2, -4, -4},
+	// {-2, -4, -4},
+	// }
+
+	A := [][]float64{
+		{+8, -2, -2},
+		{-2, +5, -4},
+		{-2, -4, +5},
+	}
+
+	MatrixPrint(A)
+	fmt.Println("--------")
+
+	for k := 0; k < len(A)-1; k++ {
+		for i := k + 1; i < len(A); i++ {
+			factor := (A[i][k] / A[k][k])
+			if A[k][k] == 0.0 {
+				fmt.Println("break")
+				break
+			}
+			fmt.Println("factor = ", factor)
+			for col := k; col < len(A[i]); col++ {
+				A[i][col] -= A[k][col] * factor
+			}
+		}
+		MatrixPrint(A)
+		fmt.Println("--------")
+	}
 }

@@ -55,7 +55,7 @@ func MatrixPrint(A [][]float64) {
 	if output {
 		n := len(A)
 		for i := 0; i < n; i++ {
-			for j := 0; j < n; j++ {
+			for j := 0; j < len(A[i]); j++ {
 				fmt.Printf("|%+20.10f|", A[i][j])
 			}
 			fmt.Printf("\n")

@@ -176,6 +176,26 @@ func TestSnippets(t *testing.T) {
 
 		output = true
 
+		// find a1,a2,a3
+		{
+			// y = c1*x1 + c2*x2 + c3*x3 + ...
+			A := generator(eig)
+			Y0 := []float64{1, 1, 1}
+			AY0 := make([]float64, 3)
+			for i := 0; i < 3; i++ {
+				for j := 0; j < 3; j++ {
+					AY0[i] += A[i][j] * Y0[j]
+				}
+			}
+			CN := make([]float64, 3)
+			L1 := 18.0
+			for i := 0; i < 3; i++ {
+				CN[i] = Y0[i] - AY0[i]/L1
+			}
+			oneMax(CN, CN)
+			fmt.Println("CN = ", CN)
+		}
+
 		// compare with another vectors
 		MatrixPrint(generator(eig))
 		MatrixPrint(generator([]eigen{

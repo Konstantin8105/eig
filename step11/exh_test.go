@@ -196,6 +196,30 @@ func TestSnippets(t *testing.T) {
 			fmt.Println("CN = ", CN)
 		}
 
+		//
+		{
+			A := generator(eig)
+			x := []float64{1, 1, 1}
+			fmt.Println("A = ", A)
+			for i := 0; i < 3; i++ {
+				A[i][i] -= 18.0
+			}
+			fmt.Println("A = ", A)
+			for iter := 0; iter < 40; iter++ {
+				fmt.Println("iter ", iter, " -> x = ", x)
+				for i := 0; i < 3; i++ {
+					x[i] = 0.0
+					for k := 0; k < 3; k++ {
+						if i == k {
+							continue
+						}
+						x[i] += A[i][k] * x[k]
+					}
+					x[i] /= -A[i][i]
+				}
+			}
+		}
+
 		// compare with another vectors
 		MatrixPrint(generator(eig))
 		MatrixPrint(generator([]eigen{

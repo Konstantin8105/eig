@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"testing"
 )
@@ -267,11 +268,9 @@ func TestSnippets(t *testing.T) {
 	})
 }
 
-// func init() {
-// 	output = flag.CommandLine.Lookup("test.v").Value.String() == "true"
-// }
-
 func Test(t *testing.T) {
+	output = flag.CommandLine.Lookup("test.v").Value.String() == "true"
+
 	// initialize
 	old := initialize
 	initialize = func(x []float64) {
@@ -410,52 +409,4 @@ func Test(t *testing.T) {
 	}
 
 	// Output:
-}
-
-func TestGauss(t *testing.T) {
-
-	// output true
-	oldOut := output
-	output = true
-	defer func() {
-		output = oldOut
-	}()
-
-	// A := [][]float64{
-	// {-1, -3, -1, 2, 2},
-	// {-1, -7, -2, 1, 2},
-	// {-1, -11, -3, 0, 2},
-	// {-2, -2, -1, 5, 4},
-	// }
-
-	// A := [][]float64{
-	// {-1, -2, -2},
-	// {-2, -4, -4},
-	// {-2, -4, -4},
-	// }
-
-	A := [][]float64{
-		{+8, -2, -2},
-		{-2, +5, -4},
-		{-2, -4, +5},
-	}
-
-	MatrixPrint(A)
-	fmt.Println("--------")
-
-	for k := 0; k < len(A)-1; k++ {
-		for i := k + 1; i < len(A); i++ {
-			factor := (A[i][k] / A[k][k])
-			if A[k][k] == 0.0 {
-				fmt.Println("break")
-				break
-			}
-			fmt.Println("factor = ", factor)
-			for col := k; col < len(A[i]); col++ {
-				A[i][col] -= A[k][col] * factor
-			}
-		}
-		MatrixPrint(A)
-		fmt.Println("--------")
-	}
 }

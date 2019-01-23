@@ -114,7 +114,7 @@ func exh(A [][]float64) (e []eigen, err error) {
 		return
 	}
 
-	for value := 0; value < n; value++ {
+	for value := 0; value < n; {
 		if output {
 			fmt.Println("Input A. value = ", value)
 			MatrixPrint(A)
@@ -130,7 +130,7 @@ func exh(A [][]float64) (e []eigen, err error) {
 
 		l := λ(A, u)
 
-		Gauss(A, l)
+		value += Gauss(A, l)
 
 		e = append(e, eigen{𝑿: u, 𝜦: l})
 
@@ -292,7 +292,7 @@ func oneMax(x, z []float64) (max float64, err error) {
 // 	return
 // }
 
-func Gauss(A [][]float64, l float64) {
+func Gauss(A [][]float64, l float64) int {
 	n := len(A)
 	U := make([][]float64, n)
 	for i := 0; i < n; i++ {
@@ -325,25 +325,36 @@ func Gauss(A [][]float64, l float64) {
 		fmt.Println("l = ", l)
 		MatrixPrint(A)
 		MatrixPrint(U)
-		var amount int
-		for i := 0; i < n; i++ {
-			var sum float64
-			var sumC float64
-			for j := 0; j < n; j++ {
-				sum += math.Abs(U[i][j])
-				sumC += math.Abs(U[j][i])
-			}
+	}
+
+	var amount int
+	for i := 0; i < n; i++ {
+		var sum float64
+		var sumC float64
+		for j := 0; j < n; j++ {
+			sum += math.Abs(U[i][j])
+			sumC += math.Abs(U[j][i])
+		}
+
+		if output {
 			fmt.Printf("row = %d\tsum = %.14e\n", i, sum)
 			fmt.Printf("col = %d\tsum = %.14e\n", i, sum)
-
-			if math.Abs(sum) < 𝛆 {
-				amount++
-			}
-			if math.Abs(sumC) < 𝛆 {
-				amount++
-			}
 		}
+
+		if math.Abs(sum) < 𝛆 {
+			amount++
+		}
+		if math.Abs(sumC) < 𝛆 {
+			amount++
+		}
+	}
+
+	if output {
 		fmt.Println("Count = ", amount)
 		fmt.Println("++++++++++++++")
 	}
+
+	fmt.Println("// TODO : ADD IMPLEMENTATION FOR КРАТНЫЕ СОБСТВЕННЫЕ ЗНАЧЕНИЯ")
+
+	return amount
 }

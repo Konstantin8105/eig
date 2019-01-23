@@ -87,12 +87,12 @@ func exh(A [][]float64) (e []eigen, err error) {
 			}
 
 			// отображаем результат каждой итерации
-			if output {
+			if output && iter > 0 {
 				fmt.Printf("iter: %2d\tx=", iter)
 				for i := range x {
 					fmt.Printf("\t%10.5e", x[i])
 				}
-				fmt.Printf("\n")
+				fmt.Printf("\t𝛆 = %10.5e\n", math.Abs((max-maxLast)/max))
 			}
 
 			// ||x(k-1)-x(k-2)|| > 𝛆
@@ -115,6 +115,10 @@ func exh(A [][]float64) (e []eigen, err error) {
 	}
 
 	for value := 0; value < n; value++ {
+		if output {
+			fmt.Println("Input A. value = ", value)
+			MatrixPrint(A)
+		}
 
 		// инициализация произвольным вектором
 		u := make([]float64, n)
@@ -125,6 +129,9 @@ func exh(A [][]float64) (e []eigen, err error) {
 		}
 
 		l := λ(A, u)
+
+		Gauss(A, l)
+
 		e = append(e, eigen{𝑿: u, 𝜦: l})
 
 		// инициализация произвольным вектором
@@ -195,7 +202,7 @@ func exh(A [][]float64) (e []eigen, err error) {
 }
 
 // точность результата
-var 𝛆 float64 = 1e-6
+var 𝛆 float64 = 1e-15
 
 func random(x []float64) {
 	// инициализация произвольным вектором
@@ -284,3 +291,59 @@ func oneMax(x, z []float64) (max float64, err error) {
 // 	}
 // 	return
 // }
+
+func Gauss(A [][]float64, l float64) {
+	n := len(A)
+	U := make([][]float64, n)
+	for i := 0; i < n; i++ {
+		U[i] = make([]float64, n)
+	}
+
+	// copying
+	for i := 0; i < n; i++ {
+		for j := 0; j < n; j++ {
+			U[i][j] = A[i][j]
+		}
+		U[i][i] -= l
+	}
+
+	// gauss decomposition to U triangle matrix
+	for k := 0; k < len(A)-1; k++ {
+		for i := k + 1; i < len(A); i++ {
+			factor := (U[i][k] / U[k][k])
+			if U[k][k] == 0.0 {
+				break
+			}
+			for col := k; col < len(U[i]); col++ {
+				U[i][col] -= U[k][col] * factor
+			}
+		}
+	}
+
+	if output {
+		fmt.Println("++++++++++++++")
+		fmt.Println("l = ", l)
+		MatrixPrint(A)
+		MatrixPrint(U)
+		var amount int
+		for i := 0; i < n; i++ {
+			var sum float64
+			var sumC float64
+			for j := 0; j < n; j++ {
+				sum += math.Abs(U[i][j])
+				sumC += math.Abs(U[j][i])
+			}
+			fmt.Printf("row = %d\tsum = %.14e\n", i, sum)
+			fmt.Printf("col = %d\tsum = %.14e\n", i, sum)
+
+			if math.Abs(sum) < 𝛆 {
+				amount++
+			}
+			if math.Abs(sumC) < 𝛆 {
+				amount++
+			}
+		}
+		fmt.Println("Count = ", amount)
+		fmt.Println("++++++++++++++")
+	}
+}

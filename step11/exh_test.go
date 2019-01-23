@@ -276,7 +276,7 @@ func Test(t *testing.T) {
 	old := initialize
 	initialize = func(x []float64) {
 		for i := range x {
-			x[i] = 1.0 //+ float64(i)
+			x[i] = 1.0
 		}
 	}
 	defer func() {
